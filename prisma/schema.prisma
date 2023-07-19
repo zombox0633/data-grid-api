@@ -1,0 +1,44 @@
+datasource db {
+  provider = "mysql"
+  url      = "mysql://username:password@localhost:3306/mysqlTS"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model PRODUCTS  {
+  id                     String       @id @default(uuid())
+  name                   String
+  category_id            String
+  price                  Decimal
+  quantity               Int
+  last_op_id             String?      @map("LAST_OP_ID")
+  created_timestamp      DateTime     @default(now()) @map("CREATED_TIMESTAMP")
+  lastupdate_timestamp   DateTime     @updatedAt @map("LASTUPDATE_TIMESTAMP")
+  category               CATEGORY?     @relation(fields: [category_id], references: [id])
+  last_op_user           USERS?         @relation("LastOpUser", fields: [last_op_id], references: [id])
+}
+
+model CATEGORY {
+  id                     String       @id @default(uuid())
+  name                   String
+  last_op_id             String?      @map("LAST_OP_ID")
+  created_timestamp      DateTime     @default(now()) @map("CREATED_TIMESTAMP")
+  lastupdate_timestamp   DateTime     @updatedAt @map("LASTUPDATE_TIMESTAMP")
+  products               PRODUCTS[]
+  last_op_user           USERS?        @relation("LastOpUser", fields: [last_op_id], references: [id])
+}
+
+model USERS {
+  id                     String       @id @default(uuid())
+  email                  String
+  password               String
+  name                   String
+  role                   String
+  last_op_id             String       @map("LAST_OP_ID")
+  created_timestamp      DateTime     @default(now()) @map("CREATED_TIMESTAMP")
+  lastupdate_timestamp   DateTime     @updatedAt @map("LASTUPDATE_TIMESTAMP")
+  products_created       PRODUCTS[]   @relation("LastOpUser")
+  categories_created     CATEGORY[]   @relation("LastOpUser")
+}
