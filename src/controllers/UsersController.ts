@@ -1,12 +1,10 @@
-  import { FastifyRequest, FastifyReply } from "fastify";
+import { FastifyRequest, FastifyReply } from "fastify";
 import { PrismaClient } from "@prisma/client";
 
-import {
-  handleServerError,
-  isValueEmpty,
-  validateAPIKey,
-  validateRequiredFields,
-} from "../utils/Utils";
+import { isValueEmpty, trimWhitespace } from "../utils/CommonUtils";
+import { validateAPIKey, validateRequiredFields } from "../utils/ValidateUtils";
+import { handleServerError } from "../utils/ErrorUtils";
+
 import UserService from "../service/UserService";
 
 type UserTypes = {
@@ -26,13 +24,13 @@ type newPassword = {
   last_op_id: string;
 };
 
-function Users() {
+function UsersController() {
   const prisma = new PrismaClient();
 
   const {
     checkExistingUserValue,
     validateAddRole,
-    validateExistingId,
+    getUserById,
     validatePasswordFields,
     validateLastOpUser,
     checkNameAndRole,
@@ -70,7 +68,7 @@ function Users() {
       if (!isFoundHeader) return;
 
       const { id } = request.params as { id: string };
-      const user = await validateExistingId(reply, id);
+      const user = await getUserById(reply, id);
       if (!user) return;
 
       reply.send({ data: user });
@@ -96,13 +94,27 @@ function Users() {
       const requiredFields = [email, password, name, role, last_op_id];
       if (!validateRequiredFields(reply, requiredFields)) return;
 
-      const isEmailUnique = await checkExistingUserValue(reply, "email", email);
+      const trimmedEmail = trimWhitespace(email);
+      const trimmedName = trimWhitespace(name);
+      const trimmedPassword = trimWhitespace(password);
+
+      const isEmailUnique = await checkExistingUserValue(
+        reply,
+        "email",
+        trimmedEmail
+      );
       if (!isEmailUnique) return;
 
-      const isNameUnique = await checkExistingUserValue(reply, "name", name);
+      const isNameUnique = await checkExistingUserValue(
+        reply,
+        "name",
+        trimmedName
+      );
       if (!isNameUnique) return;
 
-      const isLastOpIdVal = await validateLastOpUser(reply, last_op_id);
+      const isLastOpIdVal = await validateLastOpUser(reply, last_op_id, [
+        "admin",
+      ]);
       if (!isLastOpIdVal) return;
 
       const isRoleValid = validateAddRole(reply, role);
@@ -110,11 +122,11 @@ function Users() {
 
       const newUser = await prisma.uSERS.create({
         data: {
-          email,
-          password,
-          name,
-          role,
-          last_op_id,
+          email: trimmedEmail,
+          password: trimmedPassword,
+          name: trimmedName,
+          role: role,
+          last_op_id: last_op_id,
           created_timestamp: new Date(),
           lastupdate_timestamp: new Date(),
         },
@@ -138,12 +150,13 @@ function Users() {
       if (!isFoundHeader) return;
 
       const { id } = request.params as { id: string };
-      const user = await validateExistingId(reply, id);
+      const user = await getUserById(reply, id);
       if (!user) return;
 
       const { name, role, last_op_id } = request.body as UserTypes;
+      const trimmedName = trimWhitespace(name);
 
-      const newName = name ? name : user.name;
+      const newName = name ? trimmedName : user.name;
       const newRole = role ? role : user.role;
 
       const isFoundNameAndRole = await checkNameAndRole(reply, name, role);
@@ -164,8 +177,7 @@ function Users() {
         },
       });
 
-      const updatedItems = await prisma.uSERS.findMany();
-      reply.send(updatedItems);
+      reply.send(updatedUser);
     } catch (error) {
       handleServerError(reply, error);
     }
@@ -183,25 +195,29 @@ function Users() {
       if (!isFoundHeader) return;
 
       const { id } = request.params as { id: string };
-      const user = await validateExistingId(reply, id);
+      const user = await getUserById(reply, id);
       if (!user) return;
 
       const { oldPassword, newPassword1, newPassword2, last_op_id } =
         request.body as newPassword;
 
+      const trimmedOldPassword = trimWhitespace(oldPassword);
+      const trimmedNewPassword1 = trimWhitespace(newPassword1);
+      const trimmedNewPassword2 = trimWhitespace(newPassword2);
+
       const validatePassword = validatePasswordFields(
         reply,
-        oldPassword,
-        newPassword1,
-        newPassword2,
-        user.password,
+        trimmedOldPassword,
+        trimmedNewPassword1,
+        trimmedNewPassword2,
+        user.password
       );
       if (!validatePassword) return;
 
-      const lastOpIdVal = validateLastOpUser(reply, last_op_id);
+      const lastOpIdVal = validateLastOpUser(reply, last_op_id, ["admin"]);
       if (!lastOpIdVal) return;
 
-      const newPassword = newPassword1 ? newPassword1 : user.password;
+      const newPassword = newPassword1 ? trimmedNewPassword1 : user.password;
       await prisma.uSERS.update({
         where: {
           id: id,
@@ -231,7 +247,7 @@ function Users() {
       if (!isFoundHeader) return;
 
       const { id } = request.params as { id: string };
-      const user = await validateExistingId(reply, id);
+      const user = await getUserById(reply, id);
       if (!user) return;
 
       await prisma.uSERS.delete({
@@ -256,7 +272,7 @@ function Users() {
   };
 }
 
-export default Users;
+export default UsersController;
 //is นำหน้าเป็น boolean
 
 //basic auth

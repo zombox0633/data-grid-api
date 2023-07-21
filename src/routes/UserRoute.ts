@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
 
-import Users from "../controllers/Users";
+import UsersController from "../controllers/UsersController";
 import {
   getUsersSchema,
   getUserSchema,
@@ -18,7 +18,7 @@ function UsersRoute(server: FastifyInstance) {
     updateUser,
     editPassword,
     deleteUser,
-  } = Users();
+  } = UsersController();
 
   // server.get("/api/users", {preHandler:[server.guard.role(['admin'])]}, getAllUsers);
 

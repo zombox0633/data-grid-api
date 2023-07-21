@@ -1,12 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import { FastifyReply, FastifyRequest } from "fastify";
 
-import {
-  handleServerError,
-  isValueEmpty,
-  validateAPIKey,
-  validateRequiredFields,
-} from "../utils/Utils";
+import { isValueEmpty, trimWhitespace } from "../utils/CommonUtils";
+import { validateAPIKey, validateRequiredFields } from "../utils/ValidateUtils";
+import { handleServerError } from "../utils/ErrorUtils";
+
 import CategoryService from "../service/CategoryService";
 import UserService from "../service/UserService";
 
@@ -17,10 +15,10 @@ type CategoryTypes = {
   lastupdate_timestamp?: Date;
 };
 
-function Category() {
+function CategoryController() {
   const prisma = new PrismaClient();
 
-  const { validateIdCategory, checkExistingCategoryValue } = CategoryService();
+  const { getCategoryById, checkExistingCategoryValue } = CategoryService();
   const { validateLastOpUser } = UserService();
 
   //GET ALL
@@ -58,7 +56,7 @@ function Category() {
       if (!isFoundHeader) return;
 
       const { id } = request.params as { id: string };
-      const category = await validateIdCategory(reply, id);
+      const category = await getCategoryById(reply, id);
       if (!category) return;
 
       reply.send({ data: category });
@@ -83,10 +81,12 @@ function Category() {
       const requiredFields = [name, last_op_id];
       if (!validateRequiredFields(reply, requiredFields)) return;
 
+      
+      const trimmedName = trimWhitespace(name);
       const isNameUnique = await checkExistingCategoryValue(
         reply,
         "name",
-        name
+        trimmedName
       );
       if (!isNameUnique) return;
 
@@ -95,8 +95,8 @@ function Category() {
 
       const newCategory = await prisma.cATEGORY.create({
         data: {
-          name,
-          last_op_id,
+          name: trimmedName,
+          last_op_id: last_op_id,
           created_timestamp: new Date(),
           lastupdate_timestamp: new Date(),
         },
@@ -123,17 +123,18 @@ function Category() {
       if (!isFoundHeader) return;
 
       const { id } = request.params as { id: string };
-      const category = await validateIdCategory(reply, id);
+      const category = await getCategoryById(reply, id);
       if (!category) return;
 
       const { name, last_op_id } = request.body as CategoryTypes;
       const requiredFields = [name, last_op_id];
       if (!validateRequiredFields(reply, requiredFields)) return;
 
+      const trimmedName = trimWhitespace(name);
       const isNameUnique = await checkExistingCategoryValue(
         reply,
         "name",
-        name
+        trimmedName
       );
       if (!isNameUnique) return;
 
@@ -142,17 +143,16 @@ function Category() {
 
       const updatedCategory = await prisma.cATEGORY.update({
         where: {
-          id: id,
+          id: category.id,
         },
         data: {
-          name: name,
+          name: trimmedName,
           last_op_id: last_op_id,
           lastupdate_timestamp: new Date(),
         },
       });
 
-      const updatedItems = await prisma.cATEGORY.findMany();
-      reply.send(updatedItems);
+      reply.send(updatedCategory);
     } catch (error) {
       handleServerError(reply, error);
     }
@@ -173,8 +173,14 @@ function Category() {
       if (!isFoundHeader) return;
 
       const { id } = request.params as { id: string };
-      const category = await validateIdCategory(reply, id);
+      const category = await getCategoryById(reply, id);
       if (!category) return;
+
+      await prisma.cATEGORY.delete({
+        where: {
+          id: id,
+        },
+      });
 
       reply.send({ message: "Category deleted successfully" });
     } catch (error) {
@@ -191,4 +197,4 @@ function Category() {
   };
 }
 
-export default Category;
+export default CategoryController;

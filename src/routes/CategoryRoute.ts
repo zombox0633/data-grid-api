@@ -7,7 +7,7 @@ import {
   updateCategorySchema,
   deleteCategorySchema,
 } from "../schema/Category";
-import Category from "../controllers/Category";
+import CategoryController from "../controllers/CategoryController";
 
 function CategoryRoute(server: FastifyInstance) {
   const {
@@ -16,7 +16,7 @@ function CategoryRoute(server: FastifyInstance) {
     addCategory,
     updateCategory,
     deleteCategory,
-  } = Category();
+  } = CategoryController();
 
   server.get("/api/category", getAllCategorySchema, getAllCategory);
   server.get("/api/category/:id", getCategorySchema, getCategory);

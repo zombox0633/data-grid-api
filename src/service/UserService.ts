@@ -1,12 +1,13 @@
 import { FastifyReply } from "fastify";
 import { PrismaClient } from "@prisma/client";
 
-import { handleServerError, isValueNotNull } from "../utils/Utils";
+import { isValueNotNull, toLowerCase } from "../utils/CommonUtils";
+import { handleServerError } from "../utils/ErrorUtils";
 
 function ValidatedUser() {
   const params = new PrismaClient();
 
-  const validateExistingId = async (reply: FastifyReply, id: string) => {
+  const getUserById = async (reply: FastifyReply, id: string) => {
     try {
       //findUnique ใช้สำหรับค้นหาแถวเดียวในฐานข้อมูล โดยระบุเงื่อนไขที่ชัดเจนเพื่อหาแถวที่ตรงกับเงื่อนไข
       const foundUser = await params.uSERS.findUnique({
@@ -15,8 +16,9 @@ function ValidatedUser() {
         },
       });
       if (!foundUser) {
-        console.error("User not found");
-        reply.status(404).send({ message: `User id ${id} not found` });
+        const errorMessage = `User id ${id} not found`;
+        console.error(errorMessage);
+        reply.status(404).send({ message: errorMessage });
         return false;
       }
 
@@ -32,18 +34,18 @@ function ValidatedUser() {
     key: string,
     value: string
   ): Promise<boolean> => {
+    const lowercaseValue = toLowerCase(value);
     try {
       const existingUserValue = await params.uSERS.findFirst({
         where: {
-          [key]: value,
+          [key]: lowercaseValue,
         },
       });
 
       if (isValueNotNull(existingUserValue)) {
-        console.error(`User with the same ${key} already exists`);
-        reply
-          .status(400)
-          .send({ message: `User with the same ${key} already exists` });
+        const errorMessage = `User with the same ${key} already exists`;
+        console.error(errorMessage);
+        reply.status(400).send({ message: errorMessage });
         return false;
       }
 
@@ -56,7 +58,8 @@ function ValidatedUser() {
 
   const validateLastOpUser = async (
     reply: FastifyReply,
-    last_op_id: string
+    last_op_id: string,
+    requiredRole?: string[]
   ): Promise<boolean> => {
     try {
       const existingOpUser = await params.uSERS.findFirst({
@@ -66,8 +69,19 @@ function ValidatedUser() {
       });
 
       if (!existingOpUser) {
-        console.error("Invalid last operation ID");
-        reply.status(404).send({ message: "Invalid last_op_id" });
+        const errorMessage = "Invalid last operation ID";
+        console.error(errorMessage);
+        reply.status(404).send({ message: errorMessage });
+        return false;
+      }
+
+      const isRoleMatch = requiredRole?.some(
+        (role) => role === existingOpUser.role
+      );
+      if (requiredRole && !isRoleMatch) {
+        const errorMessage = `Role does not match '${requiredRole}'`;
+        console.error(errorMessage);
+        reply.status(403).send({ message: errorMessage });
         return false;
       }
 
@@ -124,27 +138,27 @@ function ValidatedUser() {
     const MIN_PASSWORD_LENGTH = 8;
 
     if (oldPassword !== confirmPassword) {
-      console.error("The provided old password is incorrect");
-      reply
-        .status(400)
-        .send({ message: "The provided old password is incorrect" });
+      const errorMessageIncorrect = "The provided old password is incorrect";
+      console.error(errorMessageIncorrect);
+      reply.status(400).send({ message: errorMessageIncorrect });
       return false;
     } else if (
       newPassword1.length < MIN_PASSWORD_LENGTH ||
       newPassword2.length < MIN_PASSWORD_LENGTH
     ) {
-      console.error("New password must be at least 8 characters long");
-      reply
-        .status(400)
-        .send({ message: "New password must be at least 8 characters long" });
+      const errorMessageLength =
+        "New password must be at least 8 characters long";
+      console.error(errorMessageLength);
+      reply.status(400).send({ message: errorMessageLength });
       return false;
     } else if (
       !newPassword1 ||
       !newPassword2 ||
       newPassword1 !== newPassword2
     ) {
-      console.error("New passwords do not match");
-      reply.status(400).send({ message: "New passwords do not match" });
+      const errorMessageNotMatch = "New passwords do not match";
+      console.error(errorMessageNotMatch);
+      reply.status(400).send({ message: errorMessageNotMatch });
       return false;
     }
 
@@ -154,7 +168,7 @@ function ValidatedUser() {
   return {
     checkExistingUserValue,
     validateAddRole,
-    validateExistingId,
+    getUserById,
     validatePasswordFields,
     checkNameAndRole,
     validateLastOpUser,

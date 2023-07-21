@@ -2,9 +2,9 @@ import Fastify, { FastifyInstance } from "fastify";
 import dotenv from "dotenv";
 
 // import TestRoute from "./routes/Test";
-import UsersRoute from "./routes/Users";
-import CategoryRoute from "./routes/Category";
-import ProductsRoute from "./routes/Products";
+import UsersRoute from "./routes/UserRoute";
+import CategoryRoute from "./routes/CategoryRoute";
+import ProductsRoute from "./routes/ProductRoute";
 
 const server: FastifyInstance = Fastify({});
 dotenv.config();

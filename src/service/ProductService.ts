@@ -1,15 +1,14 @@
 import { FastifyReply } from "fastify";
 import { PrismaClient } from "@prisma/client";
-import {
-  handleServerError,
-  isValueNotNull,
-  validateRequiredFields,
-} from "../utils/Utils";
+
+import { isValueNotNull, toLowerCase } from "../utils/CommonUtils";
+import { handleServerError } from "../utils/ErrorUtils";
+import { validateRequiredFields } from "../utils/ValidateUtils";
 
 function ProductService() {
   const params = new PrismaClient();
 
-  const validateIdProduct = async (reply: FastifyReply, id: string) => {
+  const getProductById = async (reply: FastifyReply, id: string) => {
     try {
       const foundProduct = await params.pRODUCTS.findUnique({
         where: {
@@ -17,12 +16,13 @@ function ProductService() {
         },
       });
       if (!foundProduct) {
-        console.error(`Product id ${id} not found`);
-        reply.status(404).send({ message: `Product id ${id} not found` });
+        const errorMessage = `Product id ${id} not found`;
+        console.error(errorMessage);
+        reply.status(404).send({ message: errorMessage });
         return false;
       }
 
-      return true;
+      return foundProduct;
     } catch (error) {
       handleServerError(reply, error);
       return false;
@@ -35,15 +35,17 @@ function ProductService() {
     value: string
   ): Promise<boolean> => {
     try {
+      const lowercaseValue = toLowerCase(value);
       const existingProductValue = await params.pRODUCTS.findFirst({
         where: {
-          [key]: value,
+          [key]: lowercaseValue,
         },
       });
 
       if (isValueNotNull(existingProductValue)) {
-        console.error(`The same ${key} already exist`);
-        reply.status(400).send({ message: `The same ${key} already exist` });
+        const errorMessage = `The same ${key} already exist`;
+        console.error(errorMessage);
+        reply.status(400).send({ message: errorMessage });
         return false;
       }
       return true;
@@ -62,8 +64,9 @@ function ProductService() {
     if (!validateRequiredFields(reply, fields)) {
       return false;
     } else if (price <= 0 || quantity < 0) {
-      console.error("Invalid price or quantity");
-      reply.status(400).send({ message: "Invalid price or quantity" });
+      const errorMessage = "Invalid price or quantity";
+      console.error(errorMessage);
+      reply.status(400).send({ message: errorMessage });
       return false;
     } else {
       return true;
@@ -71,7 +74,7 @@ function ProductService() {
   };
 
   return {
-    validateIdProduct,
+    getProductById,
     checkExistingProductValue,
     validateBodyValue,
   };

@@ -110,10 +110,7 @@ export const updateCategorySchema: RouteShorthandOptions = {
       required: ["name", "last_op_id"],
     },
     response: {
-      200: {
-        type: "array",
-        items: Category,
-      },
+      200: Category,
       400: {
         type: "object",
         properties: {

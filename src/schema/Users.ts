@@ -129,10 +129,7 @@ export const updateUserSchema: RouteShorthandOptions = {
       required: ["last_op_id"],
     },
     response: {
-      200: {
-        type: "array",
-        items: User,
-      },
+      200: User,
       400: {
         type: "object",
         properties: {

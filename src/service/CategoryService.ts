@@ -1,21 +1,24 @@
 import { FastifyReply } from "fastify";
 import { PrismaClient } from "@prisma/client";
 
-import { handleServerError, isValueNotNull } from "../utils/Utils";
+import { isValueNotNull, toLowerCase } from "../utils/CommonUtils";
+import { handleServerError } from "../utils/ErrorUtils";
 
 function CategoryService() {
   const params = new PrismaClient();
 
-  const validateIdCategory = async (reply: FastifyReply, id: string) => {
+  const getCategoryById = async (reply: FastifyReply, id: string) => {
     try {
       const foundCategory = await params.cATEGORY.findUnique({
         where: {
           id: id,
         },
       });
+
       if (!foundCategory) {
-        console.error(`Category id ${id} not found`);
-        reply.status(404).send({ message: `Category id ${id} not found` });
+        const errorMessage = `Category id ${id} not found`;
+        console.error(errorMessage);
+        reply.status(404).send({ message: errorMessage });
         return false;
       }
 
@@ -32,15 +35,17 @@ function CategoryService() {
     value: string
   ): Promise<boolean> => {
     try {
+      const lowercaseValue = toLowerCase(value);
       const existingCategoryValue = await params.cATEGORY.findFirst({
         where: {
-          [key]: value,
+          [key]:lowercaseValue
         },
       });
 
       if (isValueNotNull(existingCategoryValue)) {
-        console.error(`The same ${key} already exist`);
-        reply.status(400).send({ message: `The same ${key} already exist` });
+        const errorMessage = `The same ${key} already exist`;
+        console.error(errorMessage);
+        reply.status(400).send({ message: errorMessage });
         return false;
       }
 
@@ -52,7 +57,7 @@ function CategoryService() {
   };
 
   return {
-    validateIdCategory,
+    getCategoryById,
     checkExistingCategoryValue,
   };
 }

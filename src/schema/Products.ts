@@ -110,3 +110,71 @@ export const addProductSchema: RouteShorthandOptions = {
     },
   },
 };
+
+export const updateCategorySchema: RouteShorthandOptions = {
+  schema: {
+    body: {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+        category_id: { type: "string" },
+        price: { type: "number" },
+        quantity: { type: "number" },
+        last_op_id: { type: "string" },
+      },
+      required: ["last_op_id"],
+    },
+    response: {
+      200: Product,
+      400: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
+      404: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
+      500: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
+    },
+  },
+};
+
+export const deleteProductSchema: RouteShorthandOptions = {
+  schema: {
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
+      400: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
+      404: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
+      500: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
+    },
+  },
+};
