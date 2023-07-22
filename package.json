@@ -5,12 +5,16 @@
   "main": "index.ts",
   "scripts": {
     "dev": "nodemon",
+    "test": "mocha",
     "build": "tsc --project ./"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/mocha": "^10.0.1",
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
     "nodemon": "^2.0.22",
     "prisma": "^4.16.2",
     "ts-node": "^10.9.1",
