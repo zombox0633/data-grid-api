@@ -1,8 +1,13 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
 
 import { isValueEmpty, trimWhitespace } from "../utils/CommonUtils";
-import { validateAPIKey, validateRequiredFields } from "../utils/ValidateUtils";
+import {
+  validateAPIKey,
+  validateAuthUser,
+  validateRequiredFields,
+} from "../utils/ValidateUtils";
 import { handleServerError } from "../utils/ErrorUtils";
 
 import UserService from "../service/UserService";
@@ -25,7 +30,11 @@ type newPassword = {
 };
 
 function UsersController() {
+  dotenv.config();
   const prisma = new PrismaClient();
+
+  const auth_username = process.env.API_USERNAME;
+  const auth_password = process.env.API_PASSWORD;
 
   const {
     checkExistingUserValue,
@@ -38,14 +47,13 @@ function UsersController() {
 
   //GET ALL
   const getAllUsers = async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const isFoundHeader = validateAPIKey(
-        request,
-        reply,
-        "get-user-header",
-        "getUsersTest"
-      );
-      if (!isFoundHeader) return;
+    try {  
+      if (!auth_username || !auth_password)
+        return console.error(
+          "Missing API_USERNAME or API_PASSWORD in environment variables"
+        );
+      const isAuthorized = validateAuthUser(request, reply, auth_username, auth_password);
+      if (!isAuthorized) return;
 
       const users = await prisma.uSERS.findMany();
       if (isValueEmpty(reply, users, "Category")) return;
@@ -80,13 +88,12 @@ function UsersController() {
   //POST USER
   const addUser = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const isFoundHeader = validateAPIKey(
-        request,
-        reply,
-        "add-user-header",
-        "addUserTest"
-      );
-      if (!isFoundHeader) return;
+      if (!auth_username || !auth_password)
+        return console.error(
+          "Missing API_USERNAME or API_PASSWORD in environment variables"
+        );
+      const isAuthorized = validateAuthUser(request, reply, auth_username, auth_password);
+      if (!isAuthorized) return;
 
       const { email, password, name, role, last_op_id } =
         request.body as UserTypes;
@@ -138,16 +145,15 @@ function UsersController() {
     }
   };
 
-  //PUT USER *check
+  //PUT USER 
   const updateUser = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const isFoundHeader = validateAPIKey(
-        request,
-        reply,
-        "update-user-header",
-        "updateUserTest"
-      );
-      if (!isFoundHeader) return;
+      if (!auth_username || !auth_password)
+        return console.error(
+          "Missing API_USERNAME or API_PASSWORD in environment variables"
+        );
+      const isAuthorized = validateAuthUser(request, reply, auth_username, auth_password);
+      if (!isAuthorized) return;
 
       const { id } = request.params as { id: string };
       const user = await getUserById(reply, id);
@@ -238,13 +244,12 @@ function UsersController() {
   //DELETE
   const deleteUser = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const isFoundHeader = validateAPIKey(
-        request,
-        reply,
-        "delete-user-header",
-        "deleteUserTest"
-      );
-      if (!isFoundHeader) return;
+      if (!auth_username || !auth_password)
+        return console.error(
+          "Missing API_USERNAME or API_PASSWORD in environment variables"
+        );
+      const isAuthorized = validateAuthUser(request, reply, auth_username, auth_password);
+      if (!isAuthorized) return;
 
       const { id } = request.params as { id: string };
       const user = await getUserById(reply, id);
@@ -275,6 +280,5 @@ function UsersController() {
 export default UsersController;
 //is นำหน้าเป็น boolean
 
-//basic auth
 //Unit Test: Mocha
 //Exception handling

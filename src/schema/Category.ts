@@ -142,7 +142,7 @@ export const deleteCategorySchema: RouteShorthandOptions = {
           message: { type: "string" },
         },
       },
-      400: {
+      401: {
         type: "object",
         properties: {
           message: { type: "string" },

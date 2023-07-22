@@ -21,7 +21,7 @@ export const getUsersSchema: RouteShorthandOptions = {
         type: "array",
         items: User,
       },
-      400: {
+      401: {
         type: "object",
         properties: {
           message: { type: "string" },
@@ -95,6 +95,12 @@ export const addUserSchema: RouteShorthandOptions = {
           message: { type: "string" },
         },
       },
+      401: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
       403: {
         type: "object",
         properties: {
@@ -131,6 +137,12 @@ export const updateUserSchema: RouteShorthandOptions = {
     response: {
       200: User,
       400: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
+      401: {
         type: "object",
         properties: {
           message: { type: "string" },
@@ -208,7 +220,7 @@ export const deleteUserSchema: RouteShorthandOptions = {
           message: { type: "string" },
         },
       },
-      400: {
+      401: {
         type: "object",
         properties: {
           message: { type: "string" },

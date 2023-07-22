@@ -1,8 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 import { FastifyReply, FastifyRequest } from "fastify";
+import dotenv from "dotenv";
 
 import { isValueEmpty, trimWhitespace } from "../utils/CommonUtils";
-import { validateAPIKey, validateRequiredFields } from "../utils/ValidateUtils";
+import {
+  validateAPIKey,
+  validateAuthUser,
+  validateRequiredFields,
+} from "../utils/ValidateUtils";
 import { handleServerError } from "../utils/ErrorUtils";
 
 import CategoryService from "../service/CategoryService";
@@ -16,7 +21,11 @@ type CategoryTypes = {
 };
 
 function CategoryController() {
+  dotenv.config();
   const prisma = new PrismaClient();
+
+  const auth_username = process.env.API_USERNAME;
+  const auth_password = process.env.API_PASSWORD;
 
   const { getCategoryById, checkExistingCategoryValue } = CategoryService();
   const { validateLastOpUser } = UserService();
@@ -81,7 +90,6 @@ function CategoryController() {
       const requiredFields = [name, last_op_id];
       if (!validateRequiredFields(reply, requiredFields)) return;
 
-      
       const trimmedName = trimWhitespace(name);
       const isNameUnique = await checkExistingCategoryValue(
         reply,
@@ -164,13 +172,12 @@ function CategoryController() {
     reply: FastifyReply
   ) => {
     try {
-      const isFoundHeader = validateAPIKey(
-        request,
-        reply,
-        "header-delete-category",
-        "deleteCategoryTest"
-      );
-      if (!isFoundHeader) return;
+      if (!auth_username || !auth_password)
+        return console.error(
+          "Missing API_USERNAME or API_PASSWORD in environment variables"
+        );
+      const isAuthorized = validateAuthUser(request, reply, auth_username, auth_password);
+      if (!isAuthorized) return;
 
       const { id } = request.params as { id: string };
       const category = await getCategoryById(reply, id);

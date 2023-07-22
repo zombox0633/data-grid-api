@@ -1,8 +1,9 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
 
 import { isValueEmpty } from "../utils/CommonUtils";
-import { validateAPIKey } from "../utils/ValidateUtils";
+import { validateAPIKey, validateAuthUser } from "../utils/ValidateUtils";
 import { handleServerError } from "../utils/ErrorUtils";
 
 import UserService from "../service/UserService";
@@ -20,7 +21,11 @@ type ProductsTypes = {
 };
 
 function ProductsController() {
+  dotenv.config();
   const prisma = new PrismaClient();
+
+  const auth_username = process.env.API_USERNAME;
+  const auth_password = process.env.API_PASSWORD;
 
   const { getProductById, checkExistingProductValue, validateBodyValue } =
     ProductService();
@@ -167,13 +172,12 @@ function ProductsController() {
     reply: FastifyReply
   ) => {
     try {
-      const isFoundHeader = validateAPIKey(
-        request,
-        reply,
-        "header-delete-product",
-        "deleteProductTest"
-      );
-      if (!isFoundHeader) return;
+      if (!auth_username || !auth_password)
+        return console.error(
+          "Missing API_USERNAME or API_PASSWORD in environment variables"
+        );
+      const isAuthorized = validateAuthUser(request, reply, auth_username, auth_password);
+      if (!isAuthorized) return;
 
       const { id } = request.params as { id: string };
       const product = await getProductById(reply, id);
