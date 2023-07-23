@@ -282,3 +282,5 @@ export default UsersController;
 
 //Unit Test: Mocha
 //Exception handling
+
+//basic auth

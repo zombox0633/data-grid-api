@@ -7,6 +7,7 @@ import { handleServerError } from "../utils/ErrorUtils";
 function CategoryService() {
   const params = new PrismaClient();
 
+  //not test
   const getCategoryById = async (reply: FastifyReply, id: string) => {
     try {
       const foundCategory = await params.cATEGORY.findUnique({
