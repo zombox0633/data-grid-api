@@ -1,5 +1,5 @@
 import assert from "assert"; // assert คือ การยืนยัน
-import sinon from 'sinon';
+import sinon from "sinon";
 
 import {
   getThaiTimestamp,
@@ -9,8 +9,13 @@ import {
   trimWhitespace,
 } from "../../src/utils/CommonUtils";
 
+const value = "Hello";
 const nullValue = null;
 const undefinedValue = undefined;
+const mockReply: any = {
+  status: sinon.stub().returnsThis(),
+  send: sinon.stub().returnsThis(),
+};
 
 //Unit test
 describe("CommonUtils", function () {
@@ -31,7 +36,6 @@ describe("CommonUtils", function () {
 
   describe("isValueNotNull()", function () {
     it("should return true when the value is not null or undefined", function () {
-      const value = "Hello";
       assert.equal(isValueNotNull(value), true);
     });
     it("should return false when the value is null or undefined", function () {
@@ -42,7 +46,7 @@ describe("CommonUtils", function () {
 
   describe("trimWhitespace()", function () {
     it("should trim whitespace from the value", function () {
-      const value = "    Hello    ";
+      const valueWhitespace = "    Hello    ";
       const actual = trimWhitespace(value);
       const expect = "Hello";
       assert.equal(actual, expect);
@@ -51,7 +55,6 @@ describe("CommonUtils", function () {
 
   describe("toLowerCase()", function () {
     it("should convert the value to lowercase", function () {
-      const value = "Hello";
       const actual = toLowerCase(value);
       const expect = "hello";
       assert.equal(actual, expect);
@@ -59,15 +62,15 @@ describe("CommonUtils", function () {
   });
 
   describe("isValueEmpty()", function () {
-    it("should return true when the value is null or undefined", function(){
-      const mockReply = {
-        status: sinon,
-        send: () => mockReply,
-      };
+    it("should return true when the value is null or undefined", function () {
+      assert.strictEqual(isValueEmpty(mockReply, nullValue, "Test"), true);
+      assert.strictEqual(isValueEmpty(mockReply, undefinedValue, "Test"), true);
+    });
 
-      assert.strictEqual(isValueEmpty(mockReply,nullValue,"Test"),true)
-    })
-  })
+    it("should return false when the value is not null or undefined", function () {
+      assert.strictEqual(isValueEmpty(mockReply, value, "Test"), false);
+    });
+  });
 });
 
 //assert.equal จะทำการเปรียบเทียบค่าแบบ loose equality (==), ซึ่งจะให้ผลลัพธ์เป็น true ถ้าค่าทั้งสองมีความเท่ากันเมื่อทำการแปลงชนิดข้อมูล
