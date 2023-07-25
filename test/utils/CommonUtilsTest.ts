@@ -9,16 +9,13 @@ import {
   trimWhitespace,
 } from "../../src/utils/CommonUtils";
 
-const value = "Hello";
-const nullValue = null;
-const undefinedValue = undefined;
-const mockReply: any = {
-  status: sinon.stub().returnsThis(),
-  send: sinon.stub().returnsThis(),
-};
-
 //Unit test
 describe("CommonUtils", function () {
+  const value = "Hello";
+  const nullValue = null;
+  const undefinedValue = undefined;
+
+
   describe("getThaiTimestamp", function () {
     it("should return a string in the format of Thai timestamp", function () {
       const timestamp = getThaiTimestamp();
@@ -34,41 +31,61 @@ describe("CommonUtils", function () {
     });
   });
 
+
   describe("isValueNotNull()", function () {
     it("should return true when the value is not null or undefined", function () {
-      assert.equal(isValueNotNull(value), true);
+      assert.strictEqual(isValueNotNull(value), true);
     });
     it("should return false when the value is null or undefined", function () {
-      assert.equal(isValueNotNull(nullValue), false);
-      assert.equal(isValueNotNull(undefinedValue), false);
+      assert.strictEqual(isValueNotNull(nullValue), false);
+      assert.strictEqual(isValueNotNull(undefinedValue), false);
     });
   });
+
 
   describe("trimWhitespace()", function () {
     it("should trim whitespace from the value", function () {
       const valueWhitespace = "    Hello    ";
-      const actual = trimWhitespace(value);
+      const actual = trimWhitespace(valueWhitespace);
       const expect = "Hello";
-      assert.equal(actual, expect);
+      assert.strictEqual(actual, expect);
     });
   });
+
 
   describe("toLowerCase()", function () {
     it("should convert the value to lowercase", function () {
       const actual = toLowerCase(value);
       const expect = "hello";
-      assert.equal(actual, expect);
+      assert.strictEqual(actual, expect);
     });
   });
 
+  
   describe("isValueEmpty()", function () {
-    it("should return true when the value is null or undefined", function () {
-      assert.strictEqual(isValueEmpty(mockReply, nullValue, "Test"), true);
-      assert.strictEqual(isValueEmpty(mockReply, undefinedValue, "Test"), true);
+    const mockReply: any = {
+      status: sinon.stub().returnsThis(),
+      send: sinon.stub().returnsThis(),
+    };
+
+    it("should return true and send error message when the value is null or undefined", function () {
+      const resultNull = isValueEmpty(mockReply, nullValue, "Test");
+      const resultUndefined = isValueEmpty(mockReply, undefinedValue, "Test");
+
+      assert.strictEqual(resultNull, true);
+      assert.ok(mockReply.status.calledWith(404));
+      assert.ok(mockReply.send.calledWith({ message: "Test not found" }));
+
+      assert.strictEqual(resultUndefined, true);
+      assert.ok(mockReply.status.calledWith(404));
+      assert.ok(mockReply.send.calledWith({ message: "Test not found" }));
     });
 
     it("should return false when the value is not null or undefined", function () {
-      assert.strictEqual(isValueEmpty(mockReply, value, "Test"), false);
+      const actual = isValueEmpty(mockReply, "test", "Test");
+      const expect = false
+      
+      assert.strictEqual(actual, expect);
     });
   });
 });
