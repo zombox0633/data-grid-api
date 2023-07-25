@@ -43,7 +43,7 @@ export const validateAuthUser = (
   if (receivedUsername !== username || receivedPassword !== password) {
     const errorMessage = "Unauthorized - Invalid credentials";
     console.error(errorMessage);
-    reply.code(401).send({ error: errorMessage });
+    reply.code(401).send({ message : errorMessage });
     return false;
   }
 
