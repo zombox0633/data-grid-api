@@ -1,11 +1,64 @@
 import { FastifyReply } from "fastify";
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 import { isValueNotNull, toLowerCase } from "../utils/CommonUtils";
 import { handleServerError } from "../utils/ErrorUtils";
 
 function ValidatedUser() {
   const params = new PrismaClient();
+
+  const comparePassword = async (
+    password: string,
+    hashedPassword: string
+  ): Promise<boolean> => {
+    return await bcrypt.compare(password, hashedPassword);
+  };
+
+  const hashPassword = async (password: string): Promise<string> => {
+    return await bcrypt.hash(password, 10);
+  };
+
+  const checkAuthenticateUser = async (
+    reply: FastifyReply,
+    email: string,
+    password: string
+  ) => {
+    try {
+      if (!email || !password) {
+        return reply
+          .status(400)
+          .send({ message: "email and password are required!" });
+      } else if (password.length < 8) {
+        return reply
+          .status(400)
+          .send({ message: "Password must be at least 8 characters long" });
+      }
+
+      const user = await params.uSERS.findFirst({
+        where: {
+          email: email,
+        },
+      });
+
+      const errorMessage = "Email or password is incorrect";
+      if (!user) {
+        reply.status(401).send({ message: errorMessage });
+        return false;
+      }
+
+      const isPasswordValid = await comparePassword(password, user.password);
+      if (!isPasswordValid) {
+        reply.status(401).send({ message: errorMessage });
+        return false;
+      }
+
+      return user;
+    } catch (error) {
+      handleServerError(reply, error);
+      return false;
+    }
+  };
 
   const getUserById = async (reply: FastifyReply, id: string) => {
     try {
@@ -128,16 +181,17 @@ function ValidatedUser() {
   };
 
   //PUT PASSWORD
-  const validatePasswordFields = (
+  const validatePasswordFields = async (
     reply: FastifyReply,
     oldPassword: string,
     newPassword1: string,
     newPassword2: string,
     confirmPassword: string
-  ): boolean => {
+  ):Promise<boolean> => {
     const MIN_PASSWORD_LENGTH = 8;
 
-    if (oldPassword !== confirmPassword) {
+    const isOldPasswordValid = await comparePassword(oldPassword,confirmPassword)
+    if (!isOldPasswordValid ) {
       const errorMessageIncorrect = "The provided old password is incorrect";
       console.error(errorMessageIncorrect);
       reply.status(400).send({ message: errorMessageIncorrect });
@@ -166,6 +220,9 @@ function ValidatedUser() {
   };
 
   return {
+    comparePassword,
+    hashPassword,
+    checkAuthenticateUser,
     checkExistingUserValue,
     validateAddRole,
     getUserById,

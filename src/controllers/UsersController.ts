@@ -37,6 +37,8 @@ function UsersController() {
   const auth_password = process.env.API_PASSWORD;
 
   const {
+    hashPassword,
+    checkAuthenticateUser,
     checkExistingUserValue,
     validateAddRole,
     getUserById,
@@ -45,14 +47,36 @@ function UsersController() {
     checkNameAndRole,
   } = UserService();
 
+  //Authentication
+  const authenticateUser = async (
+    request: FastifyRequest,
+    reply: FastifyReply
+  ) => {
+    try {
+      //Bearer Token
+
+      const { email, password } = request.body as UserTypes;
+      const user = checkAuthenticateUser(reply, email, password);
+      if (!user) return;
+
+    } catch (error) {
+      handleServerError(reply, error);
+    }
+  };
+
   //GET ALL
   const getAllUsers = async (request: FastifyRequest, reply: FastifyReply) => {
-    try {  
+    try {
       if (!auth_username || !auth_password)
         return console.error(
           "Missing API_USERNAME or API_PASSWORD in environment variables"
         );
-      const isAuthorized = validateAuthUser(request, reply, auth_username, auth_password);
+      const isAuthorized = validateAuthUser(
+        request,
+        reply,
+        auth_username,
+        auth_password
+      );
       if (!isAuthorized) return;
 
       const users = await prisma.uSERS.findMany();
@@ -92,7 +116,12 @@ function UsersController() {
         return console.error(
           "Missing API_USERNAME or API_PASSWORD in environment variables"
         );
-      const isAuthorized = validateAuthUser(request, reply, auth_username, auth_password);
+      const isAuthorized = validateAuthUser(
+        request,
+        reply,
+        auth_username,
+        auth_password
+      );
       if (!isAuthorized) return;
 
       const { email, password, name, role, last_op_id } =
@@ -127,10 +156,12 @@ function UsersController() {
       const isRoleValid = validateAddRole(reply, role);
       if (!isRoleValid) return;
 
+      const hashedPassword = await hashPassword(trimmedPassword)
+
       const newUser = await prisma.uSERS.create({
         data: {
           email: trimmedEmail,
-          password: trimmedPassword,
+          password: hashedPassword,
           name: trimmedName,
           role: role,
           last_op_id: last_op_id,
@@ -145,14 +176,19 @@ function UsersController() {
     }
   };
 
-  //PUT USER 
+  //PUT USER
   const updateUser = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
       if (!auth_username || !auth_password)
         return console.error(
           "Missing API_USERNAME or API_PASSWORD in environment variables"
         );
-      const isAuthorized = validateAuthUser(request, reply, auth_username, auth_password);
+      const isAuthorized = validateAuthUser(
+        request,
+        reply,
+        auth_username,
+        auth_password
+      );
       if (!isAuthorized) return;
 
       const { id } = request.params as { id: string };
@@ -211,7 +247,7 @@ function UsersController() {
       const trimmedNewPassword1 = trimWhitespace(newPassword1);
       const trimmedNewPassword2 = trimWhitespace(newPassword2);
 
-      const validatePassword = validatePasswordFields(
+      const validatePassword = await validatePasswordFields(
         reply,
         trimmedOldPassword,
         trimmedNewPassword1,
@@ -223,7 +259,9 @@ function UsersController() {
       const lastOpIdVal = validateLastOpUser(reply, last_op_id, ["admin"]);
       if (!lastOpIdVal) return;
 
-      const newPassword = newPassword1 ? trimmedNewPassword1 : user.password;
+      const hashedPassword = await hashPassword(trimmedNewPassword1)
+      const newPassword = newPassword1 ? hashedPassword : user.password;
+
       await prisma.uSERS.update({
         where: {
           id: id,
@@ -248,7 +286,12 @@ function UsersController() {
         return console.error(
           "Missing API_USERNAME or API_PASSWORD in environment variables"
         );
-      const isAuthorized = validateAuthUser(request, reply, auth_username, auth_password);
+      const isAuthorized = validateAuthUser(
+        request,
+        reply,
+        auth_username,
+        auth_password
+      );
       if (!isAuthorized) return;
 
       const { id } = request.params as { id: string };
