@@ -14,6 +14,39 @@ const User = {
   },
 };
 
+export const authentication: RouteShorthandOptions = {
+  schema: {
+    body: {
+      type: "object",
+      properties: {
+        email: { type: "string" },
+        password: { type: "string" },
+      },
+      required: ["email", "password"],
+    },
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          token: { type: "string" },
+        },
+      },
+      400: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
+      401: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
+    },
+  },
+};
+
 export const getUsersSchema: RouteShorthandOptions = {
   schema: {
     response: {

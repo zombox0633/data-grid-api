@@ -8,10 +8,12 @@ import {
   updateUserSchema,
   editPasswordSchema,
   deleteUserSchema,
+  authentication,
 } from "../schema/Users";
 
 function UsersRoute(server: FastifyInstance) {
   const {
+    authenticateUser,
     getAllUsers,
     getUser,
     addUser,
@@ -24,6 +26,9 @@ function UsersRoute(server: FastifyInstance) {
 
   server.get("/api/users", getUsersSchema, getAllUsers);
   server.get("/api/users/:id", getUserSchema, getUser);
+
+  //Authentication
+  server.post("/api/users/login", authentication, authenticateUser);
 
   server.post("/api/users", addUserSchema, addUser);
 

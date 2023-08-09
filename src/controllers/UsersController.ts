@@ -1,6 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
 
 import { isValueEmpty, trimWhitespace } from "../utils/CommonUtils";
 import {
@@ -35,6 +36,7 @@ function UsersController() {
 
   const auth_username = process.env.API_USERNAME;
   const auth_password = process.env.API_PASSWORD;
+  const secretKey = process.env.JWT_SECRET;
 
   const {
     hashPassword,
@@ -53,12 +55,20 @@ function UsersController() {
     reply: FastifyReply
   ) => {
     try {
-      //Bearer Token
-
       const { email, password } = request.body as UserTypes;
-      const user = checkAuthenticateUser(reply, email, password);
+      const user = await checkAuthenticateUser(reply, email, password);
       if (!user) return;
 
+      const payload = {
+        id: user.id,
+        email: user.email,
+      };
+
+      const newToken = jwt.sign(payload, secretKey || "secretKey", {
+        expiresIn: "1h",
+      });
+
+      reply.send({ token: newToken });
     } catch (error) {
       handleServerError(reply, error);
     }
@@ -156,7 +166,7 @@ function UsersController() {
       const isRoleValid = validateAddRole(reply, role);
       if (!isRoleValid) return;
 
-      const hashedPassword = await hashPassword(trimmedPassword)
+      const hashedPassword = await hashPassword(trimmedPassword);
 
       const newUser = await prisma.uSERS.create({
         data: {
@@ -259,7 +269,7 @@ function UsersController() {
       const lastOpIdVal = validateLastOpUser(reply, last_op_id, ["admin"]);
       if (!lastOpIdVal) return;
 
-      const hashedPassword = await hashPassword(trimmedNewPassword1)
+      const hashedPassword = await hashPassword(trimmedNewPassword1);
       const newPassword = newPassword1 ? hashedPassword : user.password;
 
       await prisma.uSERS.update({
@@ -311,6 +321,7 @@ function UsersController() {
   };
 
   return {
+    authenticateUser,
     getAllUsers,
     getUser,
     addUser,

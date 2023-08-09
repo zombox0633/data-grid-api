@@ -38,3 +38,6 @@ CREATE TABLE USERS (
 SET @uuid = UUID();
 INSERT INTO `USERS`
 VALUES (@uuid,"a@gmail.com","123456","earth","admin",@uuid,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP);
+
+./dockerUp.bat
+./dockerDown.bat
