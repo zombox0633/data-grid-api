@@ -7,6 +7,7 @@ import { isValueEmpty, trimWhitespace } from "../utils/CommonUtils";
 import {
   validateAPIKey,
   validateAuthUser,
+  validateBearerToken,
   validateRequiredFields,
 } from "../utils/ValidateUtils";
 import { handleServerError } from "../utils/ErrorUtils";
@@ -69,6 +70,22 @@ function UsersController() {
       });
 
       reply.send({ token: newToken });
+    } catch (error) {
+      handleServerError(reply, error);
+    }
+  };
+
+  //GetRegister
+  const getRegister = async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const BearerToken = validateBearerToken(request,reply,secretKey)
+      if(!BearerToken)return
+
+      const { id } = request.params as { id: string };
+      const user = await getUserById(reply, id);
+      if (!user) return;
+
+      reply.send({ data: user });
     } catch (error) {
       handleServerError(reply, error);
     }
@@ -322,6 +339,7 @@ function UsersController() {
 
   return {
     authenticateUser,
+    getRegister,
     getAllUsers,
     getUser,
     addUser,

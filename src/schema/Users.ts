@@ -14,7 +14,7 @@ const User = {
   },
 };
 
-export const authentication: RouteShorthandOptions = {
+export const authenticationSchema: RouteShorthandOptions = {
   schema: {
     body: {
       type: "object",
@@ -37,7 +37,44 @@ export const authentication: RouteShorthandOptions = {
           message: { type: "string" },
         },
       },
+      404: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
+      500: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
+    },
+  },
+};
+
+export const getRegisterSchema: RouteShorthandOptions = {
+  schema: {
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          data: User,
+        },
+      },
+      400: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
       401: {
+        type: "object",
+        properties: {
+          message: { type: "string" },
+        },
+      },
+      500: {
         type: "object",
         properties: {
           message: { type: "string" },

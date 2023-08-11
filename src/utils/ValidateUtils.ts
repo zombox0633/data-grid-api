@@ -1,4 +1,5 @@
 import { FastifyRequest, FastifyReply } from "fastify";
+import jwt from "jsonwebtoken";
 
 //API KEY
 export const validateAPIKey = (
@@ -43,11 +44,34 @@ export const validateAuthUser = (
   if (receivedUsername !== username || receivedPassword !== password) {
     const errorMessage = "Unauthorized - Invalid credentials";
     console.error(errorMessage);
-    reply.code(401).send({ message : errorMessage });
+    reply.code(401).send({ message: errorMessage });
     return false;
   }
 
   return true;
+};
+
+//BearerToken
+export const validateBearerToken = (
+  request: FastifyRequest,
+  reply: FastifyReply,
+  secretKey?: string
+) => {
+  const authHeader = request.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    reply.status(401).send({ message: "Unauthorized" });
+    return false;
+  }
+
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, secretKey || "secretKey");
+    return decoded;
+  } catch (error) {
+    reply.status(401).send({ message: "Invalid token" });
+    return false;
+  }
 };
 
 export const validateRequiredFields = (

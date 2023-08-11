@@ -8,12 +8,14 @@ import {
   updateUserSchema,
   editPasswordSchema,
   deleteUserSchema,
-  authentication,
+  authenticationSchema,
+  getRegisterSchema,
 } from "../schema/Users";
 
 function UsersRoute(server: FastifyInstance) {
   const {
     authenticateUser,
+    getRegister,
     getAllUsers,
     getUser,
     addUser,
@@ -22,13 +24,14 @@ function UsersRoute(server: FastifyInstance) {
     deleteUser,
   } = UsersController();
 
-  // server.get("/api/users", {preHandler:[server.guard.role(['admin'])]}, getAllUsers);
+  //Authentication
+  server.post("/api/users/login", authenticationSchema, authenticateUser);
+
+  //getRegister
+  server.get("/api/users/register/:id", getRegisterSchema, getRegister);
 
   server.get("/api/users", getUsersSchema, getAllUsers);
   server.get("/api/users/:id", getUserSchema, getUser);
-
-  //Authentication
-  server.post("/api/users/login", authentication, authenticateUser);
 
   server.post("/api/users", addUserSchema, addUser);
 
