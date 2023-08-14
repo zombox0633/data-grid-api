@@ -1,6 +1,6 @@
 datasource db {
   provider = "mysql"
-  url      = "mysql://username:password@localhost:3306/mysqlTS"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
