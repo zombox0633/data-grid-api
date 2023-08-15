@@ -66,8 +66,10 @@ export const validateBearerToken = (
 
   const token = authHeader.split(" ")[1];
   try {
-    const decoded = jwt.verify(token, secretKey || "secretKey");
-    return decoded;
+    const decoded = jwt.verify(token, secretKey || "secretKey") as {
+      id: string;
+    };
+    return decoded.id;
   } catch (error) {
     reply.status(401).send({ message: "Invalid token" });
     return false;

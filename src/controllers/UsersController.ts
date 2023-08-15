@@ -78,11 +78,10 @@ function UsersController() {
   //GetRegister
   const getRegister = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const BearerToken = validateBearerToken(request,reply,secretKey)
-      if(!BearerToken)return
+      const userId = validateBearerToken(request, reply, secretKey);
+      if (!userId) return;
 
-      const { id } = request.params as { id: string };
-      const user = await getUserById(reply, id);
+      const user = await getUserById(reply, userId);
       if (!user) return;
 
       reply.send({ data: user });

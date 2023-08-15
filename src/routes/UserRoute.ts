@@ -28,7 +28,7 @@ function UsersRoute(server: FastifyInstance) {
   server.post("/api/users/login", authenticationSchema, authenticateUser);
 
   //getRegister
-  server.get("/api/users/register/:id", getRegisterSchema, getRegister);
+  server.get("/api/users/register", getRegisterSchema, getRegister);
 
   server.get("/api/users", getUsersSchema, getAllUsers);
   server.get("/api/users/:id", getUserSchema, getUser);
