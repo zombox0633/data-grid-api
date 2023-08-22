@@ -18,6 +18,7 @@ dotenv.config();
 //การตั้งค่า CORS (Cross-Origin Resource Sharing) ให้เซิร์ฟเวอร์ API (Back-end) อนุญาตให้หน้าเว็บที่รันที่หรือใช้ API ได้
 server.register(cors, {
   origin: "http://localhost:5173",
+  credentials: true
 });
 
 const start = async () => {
