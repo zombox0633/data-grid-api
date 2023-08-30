@@ -88,8 +88,13 @@ export const getUsersSchema: RouteShorthandOptions = {
   schema: {
     response: {
       200: {
-        type: "array",
-        items: User,
+        type: "object",
+        properties: {
+          data: {
+            type:"array",
+            item: User
+          },
+        },
       },
       401: {
         type: "object",
@@ -158,7 +163,12 @@ export const addUserSchema: RouteShorthandOptions = {
       required: ["email", "password", "name", "role", "last_op_id"],
     },
     response: {
-      201: User,
+      201: {
+        type: "object",
+        properties: {
+          data: User,
+        },
+      },
       400: {
         type: "object",
         properties: {
@@ -205,7 +215,12 @@ export const updateUserSchema: RouteShorthandOptions = {
       required: ["last_op_id"],
     },
     response: {
-      200: User,
+      200: {
+        type: "object",
+        properties: {
+          data: User,
+        },
+      },
       400: {
         type: "object",
         properties: {

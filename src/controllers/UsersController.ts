@@ -93,22 +93,22 @@ function UsersController() {
   //GET ALL
   const getAllUsers = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      if (!auth_username || !auth_password)
-        return console.error(
-          "Missing API_USERNAME or API_PASSWORD in environment variables"
-        );
-      const isAuthorized = validateAuthUser(
-        request,
-        reply,
-        auth_username,
-        auth_password
-      );
-      if (!isAuthorized) return;
+      // if (!auth_username || !auth_password)
+      //   return console.error(
+      //     "Missing API_USERNAME or API_PASSWORD in environment variables"
+      //   );
+      // const isAuthorized = validateAuthUser(
+      //   request,
+      //   reply,
+      //   auth_username,
+      //   auth_password
+      // );
+      // if (!isAuthorized) return;
 
       const users = await prisma.uSERS.findMany();
       if (isValueEmpty(reply, users, "Category")) return;
 
-      reply.send(users);
+      reply.send({ data: users });
     } catch (error) {
       handleServerError(reply, error);
     }
@@ -117,13 +117,13 @@ function UsersController() {
   //GET
   const getUser = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const isFoundHeader = validateAPIKey(
-        request,
-        reply,
-        "get-user-header",
-        "getUserTest"
-      );
-      if (!isFoundHeader) return;
+      // const isFoundHeader = validateAPIKey(
+      //   request,
+      //   reply,
+      //   "get-user-header",
+      //   "getUserTest"
+      // );
+      // if (!isFoundHeader) return;
 
       const { id } = request.params as { id: string };
       const user = await getUserById(reply, id);
@@ -138,17 +138,17 @@ function UsersController() {
   //POST USER
   const addUser = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      if (!auth_username || !auth_password)
-        return console.error(
-          "Missing API_USERNAME or API_PASSWORD in environment variables"
-        );
-      const isAuthorized = validateAuthUser(
-        request,
-        reply,
-        auth_username,
-        auth_password
-      );
-      if (!isAuthorized) return;
+      // if (!auth_username || !auth_password)
+      //   return console.error(
+      //     "Missing API_USERNAME or API_PASSWORD in environment variables"
+      //   );
+      // const isAuthorized = validateAuthUser(
+      //   request,
+      //   reply,
+      //   auth_username,
+      //   auth_password
+      // );
+      // if (!isAuthorized) return;
 
       const { email, password, name, role, last_op_id } =
         request.body as UserTypes;
@@ -184,7 +184,7 @@ function UsersController() {
 
       const hashedPassword = await hashPassword(trimmedPassword);
 
-      const newUser = await prisma.uSERS.create({
+      const user = await prisma.uSERS.create({
         data: {
           email: trimmedEmail,
           password: hashedPassword,
@@ -196,7 +196,7 @@ function UsersController() {
         },
       });
 
-      reply.code(201).send(newUser);
+      reply.code(201).send({ data: user });
     } catch (error) {
       handleServerError(reply, error);
     }
@@ -205,17 +205,17 @@ function UsersController() {
   //PUT USER
   const updateUser = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      if (!auth_username || !auth_password)
-        return console.error(
-          "Missing API_USERNAME or API_PASSWORD in environment variables"
-        );
-      const isAuthorized = validateAuthUser(
-        request,
-        reply,
-        auth_username,
-        auth_password
-      );
-      if (!isAuthorized) return;
+      // if (!auth_username || !auth_password)
+      //   return console.error(
+      //     "Missing API_USERNAME or API_PASSWORD in environment variables"
+      //   );
+      // const isAuthorized = validateAuthUser(
+      //   request,
+      //   reply,
+      //   auth_username,
+      //   auth_password
+      // );
+      // if (!isAuthorized) return;
 
       const { id } = request.params as { id: string };
       const user = await getUserById(reply, id);
@@ -245,7 +245,7 @@ function UsersController() {
         },
       });
 
-      reply.send(updatedUser);
+      reply.send({ data: updatedUser });
     } catch (error) {
       handleServerError(reply, error);
     }
@@ -254,13 +254,13 @@ function UsersController() {
   //PUT PASSWORD
   const editPassword = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const isFoundHeader = validateAPIKey(
-        request,
-        reply,
-        "edit-password-header",
-        "editPassword"
-      );
-      if (!isFoundHeader) return;
+      // const isFoundHeader = validateAPIKey(
+      //   request,
+      //   reply,
+      //   "edit-password-header",
+      //   "editPassword"
+      // );
+      // if (!isFoundHeader) return;
 
       const { id } = request.params as { id: string };
       const user = await getUserById(reply, id);
@@ -308,17 +308,17 @@ function UsersController() {
   //DELETE
   const deleteUser = async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      if (!auth_username || !auth_password)
-        return console.error(
-          "Missing API_USERNAME or API_PASSWORD in environment variables"
-        );
-      const isAuthorized = validateAuthUser(
-        request,
-        reply,
-        auth_username,
-        auth_password
-      );
-      if (!isAuthorized) return;
+      // if (!auth_username || !auth_password)
+      //   return console.error(
+      //     "Missing API_USERNAME or API_PASSWORD in environment variables"
+      //   );
+      // const isAuthorized = validateAuthUser(
+      //   request,
+      //   reply,
+      //   auth_username,
+      //   auth_password
+      // );
+      // if (!isAuthorized) return;
 
       const { id } = request.params as { id: string };
       const user = await getUserById(reply, id);

@@ -18,8 +18,13 @@ export const getAllProductSchema: RouteShorthandOptions = {
   schema: {
     response: {
       200: {
-        type: "array",
-        items: Product,
+        type: "object",
+        properties: {
+          data: {
+            type: "array",
+            items: Product,
+          },
+        },
       },
       400: {
         type: "object",
@@ -88,7 +93,12 @@ export const addProductSchema: RouteShorthandOptions = {
       required: ["name", "category_id", "price", "last_op_id"],
     },
     response: {
-      201: Product,
+      201: {
+        type: "object",
+        properties: {
+          data: Product,
+        },
+      },
       400: {
         type: "object",
         properties: {
@@ -125,7 +135,12 @@ export const updateCategorySchema: RouteShorthandOptions = {
       required: ["last_op_id"],
     },
     response: {
-      200: Product,
+      200: {
+        type: "object",
+        properties: {
+          data: Product,
+        },
+      },
       400: {
         type: "object",
         properties: {
