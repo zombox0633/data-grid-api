@@ -4,8 +4,12 @@ bcrypt.hash: เป็นฟังก์ชันใช้ในการเข�
 
 middleware หมายถึงฟังก์ชันหรือชุดของฟังก์ชันที่จะถูกเรียกใช้ในระหว่างขั้นตอนของการประมวลผลคำขอ (request) และการตอบสนอง (response) ในเฟรมเวิร์ก
 
+
 user
 id ccf28f6f-404b-4f0c-bb2a-11f45b253442
 zzzz@gmail.com
 password abcdefg123
-token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNjZjI4ZjZmLTQwNGItNGYwYy1iYjJhLTExZjQ1YjI1MzQ0MiIsImVtYWlsIjoienp6ekBnbWFpbC5jb20iLCJpYXQiOjE2OTE1OTA4NDYsImV4cCI6MTY5MTU5NDQ0Nn0.ekaARpVrUS1_pxwIDn2Cl1JDG4KrQ9bKgZvRZf80kuc
+
+admin
+ghostet360@gmail.com
+123456789
